@@ -33,6 +33,12 @@ struct state_variable_filter : object {
 };
 struct oscillator : object {
   float frequency = 440.0f;
+  float frequency_multi = 1.0f;
+  float frequency_multi2coarse = 1.0f;
+  float frequency_multi2fine = 0.0f;
+  float vibrato_amplitude = 0.0f;
+  float vibrato_freqattenuate = 0.0f;
+  float vibrato_phase = 0.0f;
   float morph = 1.0f;
   float phase = 0.0f;
   float duty = 0.0f;

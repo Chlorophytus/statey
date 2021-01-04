@@ -8,7 +8,7 @@ void state_variable_filter::render(float inL, float inR, float &outL,
   auto R = inR;
   outL = 0.0f;
   outR = 0.0f;
-  auto f_coeff = std::sin((M_PI * frequency) / 44100.0f) * 2.0f;
+  auto f_coeff = std::sin((M_PI * frequency) / SAMPLE_RATE) * 2.0f;
   auto q_coeff = 1.0f / q_factor;
 
   highpassL = truncate(-(lowpassL + (delaysL[0] * q_coeff)) + L);
@@ -50,9 +50,15 @@ void state_variable_filter::render(float inL, float inR, float &outL,
 }
 
 void oscillator::render(float inL, float inR, float &outL, float &outR) {
+  auto vib = std::cos(vibrato_phase);
+  vibrato_phase += vibrato_freqattenuate;
+  vibrato_phase = std::fmod(vibrato_phase + M_PI, 2.0f * M_PI) - M_PI;
   auto saw = phase;
   auto pulse = (phase < duty ? 1.0f : -1.0f);
-  phase += (frequency * M_PI * 2.0f) / 44100.0f;
+  phase += (frequency_multi * (frequency_multi2coarse + frequency_multi2fine) *
+            frequency * M_PI * 2.0f) /
+           SAMPLE_RATE;
+  phase += vib * vibrato_amplitude * 0.001f;
   phase = std::fmod(phase + M_PI, 2.0f * M_PI) - M_PI;
   auto mixed = ((1.0f - morph) * saw) + (morph * pulse);
   outL = mixed / M_PI;

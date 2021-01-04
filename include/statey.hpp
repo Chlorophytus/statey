@@ -9,3 +9,5 @@
 #include <rtmidi/RtMidi.h>
 #include <thread>
 #include <vector>
+
+constexpr float SAMPLE_RATE = 96000.0f;

@@ -7,7 +7,7 @@ audio::audio() {
   params.deviceId = dac.getDefaultOutputDevice();
   params.firstChannel = 0;
   params.nChannels = 2;
-  auto numFrames = (unsigned int){512};
+  auto numFrames = (unsigned int){2048};
 
   for (auto &&voice : voices) {
     voice = std::make_unique<statey::voice>();
@@ -15,7 +15,7 @@ audio::audio() {
     voice->svf1.mux = statey::state_variable_filter::output_mux_t::lp;
   }
 
-  dac.openStream(&params, nullptr, RTAUDIO_SINT16, 44100, &numFrames,
+  dac.openStream(&params, nullptr, RTAUDIO_SINT16, SAMPLE_RATE, &numFrames,
                  audio::callback, this);
   dac.startStream();
 }
@@ -44,8 +44,6 @@ void audio::render_channels(int16_t &left, int16_t &right) {
     floatL += floatLamp;
     floatR += floatRamp;
   }
-  floatL /= 2.0f;
-  floatR /= 2.0f;
   left = static_cast<int16_t>(16384.0f * floatL);
   right = static_cast<int16_t>(16384.0f * floatR);
 }
@@ -69,7 +67,7 @@ void audio::step_on(uint8_t midnote, float velocity) {
                                 static_cast<int>(midnote) - 49);
   auto &&vco = voices.at(on);
   vco->osc0.frequency = note;
-  vco->osc1.frequency = note * (vco->osc1_detune_fine + vco->osc1_detune);
+  vco->osc1.frequency = note;
   vco->amp0.constantL = velocity;
   vco->amp0.constantR = velocity;
   vco->amp0.hold = true;

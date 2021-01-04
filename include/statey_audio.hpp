@@ -8,9 +8,6 @@ struct voice {
   state_variable_filter svf0{};
   state_variable_filter svf1{};
   enhanced_amplifier amp0{};
-
-  float osc1_detune = 1.0f;
-  float osc1_detune_fine = 0.0f;
 };
 struct audio {
   uint8_t on = 0;

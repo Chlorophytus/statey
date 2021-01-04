@@ -13,15 +13,24 @@ int main(int argc, char const *argv[]) {
         break;
       }
       case 0x90: {
-        audio->step_on(mesg.data0.value(),
-                       std::pow(mesg.data1.value() / 127.0f, 2.0f));
+        audio->step_on(mesg.data0.value(), mesg.data1.value() / 127.0f);
         break;
       }
       case 0xB0: {
         auto control_command = mesg.data0.value();
         switch (control_command) {
+        case 1: {
+          auto setting = std::pow(mesg.data1.value() / 127.0f, 2.0f) / 1024.0f;
+          for (auto &&voice : audio->voices) {
+            voice->osc0.vibrato_freqattenuate = setting;
+            voice->osc1.vibrato_freqattenuate = setting;
+          }
+          std::fprintf(stderr, "set vib amp to %f\n", setting);
+          break;
+        }
         case 21: {
-          auto setting = std::pow(mesg.data1.value() / 127.0f, 2.0f) * 11025.0f;
+          auto setting = std::pow(mesg.data1.value() / 127.0f, 2.0f) *
+                         (SAMPLE_RATE / 8.0f);
           for (auto &&voice : audio->voices) {
             voice->svf0.frequency = setting;
           }
@@ -30,7 +39,7 @@ int main(int argc, char const *argv[]) {
         }
         case 22: {
           auto setting =
-              0.5f + (std::pow(mesg.data1.value() / 127.0f, 2.0f) * 9.5f);
+              0.5f + (std::pow(mesg.data1.value() / 127.0f, 2.0f) * 99.5f);
           for (auto &&voice : audio->voices) {
             voice->svf0.q_factor = setting;
           }
@@ -38,7 +47,8 @@ int main(int argc, char const *argv[]) {
           break;
         }
         case 23: {
-          auto setting = std::pow(mesg.data1.value() / 127.0f, 2.0f) * 11025.0f;
+          auto setting = std::pow(mesg.data1.value() / 127.0f, 2.0f) *
+                         (SAMPLE_RATE / 8.0f);
           for (auto &&voice : audio->voices) {
             voice->svf1.frequency = setting;
           }
@@ -47,7 +57,7 @@ int main(int argc, char const *argv[]) {
         }
         case 24: {
           auto setting =
-              0.5f + (std::pow(mesg.data1.value() / 127.0f, 2.0f) * 9.5f);
+              0.5f + (std::pow(mesg.data1.value() / 127.0f, 2.0f) * 99.5f);
           for (auto &&voice : audio->voices) {
             voice->svf1.q_factor = setting;
           }
@@ -55,15 +65,15 @@ int main(int argc, char const *argv[]) {
           break;
         }
         case 25: {
-          auto setting = mesg.data1.value() / 65536.0f;
+          auto setting = mesg.data1.value() / 4096.0f;
           for (auto &&voice : audio->voices) {
-            voice->osc1_detune_fine = setting;
+            voice->osc1.frequency_multi2fine = setting;
           }
           std::fprintf(stderr, "set V1detune fine to %f\n", setting);
           break;
         }
         case 44: {
-          auto setting = std::pow(mesg.data1.value() / 127.0f, 3.0f);
+          auto setting = std::pow(mesg.data1.value() / 127.0f, 4.0f);
           for (auto &&voice : audio->voices) {
             voice->amp0.attack_rate = setting;
           }
@@ -71,7 +81,7 @@ int main(int argc, char const *argv[]) {
           break;
         }
         case 45: {
-          auto setting = std::pow(mesg.data1.value() / 127.0f, 3.0f);
+          auto setting = std::pow(mesg.data1.value() / 127.0f, 4.0f);
           for (auto &&voice : audio->voices) {
             voice->amp0.release_rate = setting;
           }
@@ -128,13 +138,30 @@ int main(int argc, char const *argv[]) {
           }
 
           for (auto &&voice : audio->voices) {
-            voice->osc1_detune = realsetting;
+            voice->osc1.frequency_multi2coarse = realsetting;
           }
           std::fprintf(stderr, "set V1detune coarse to %s\n", setting);
           break;
         }
         default:
           break;
+        }
+        break;
+      }
+      case 0xD0: {
+        auto setting = std::pow(mesg.data0.value() / 127.0f, 2.0f) / 16.0f;
+        for (auto &&voice : audio->voices) {
+          voice->osc0.vibrato_amplitude = setting;
+          voice->osc1.vibrato_amplitude = setting;
+        }
+        std::fprintf(stderr, "channel aftertouch %f\n", setting);
+        break;
+      }
+      case 0xE0: {
+        auto setting = (mesg.data1.value() / 127.0f) + 0.5f;
+        for (auto &&voice : audio->voices) {
+          voice->osc0.frequency_multi = setting;
+          voice->osc1.frequency_multi = setting;
         }
         break;
       }
